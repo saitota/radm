@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
           - ubuntu-24.04
           - macos-13
           - macos-15
@@ -37,9 +37,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            expect \
-            ${{ matrix.os != 'ubuntu-20.04' && 'j2cli' || '' }}
+          sudo apt-get install -y expect j2cli
 
       - name: Install dependencies on macOS
         if: ${{ runner.os == 'macOS' }}
@@ -98,7 +96,7 @@ jobs:
           done
 
       - name: Set up Python 3.11
-        if: ${{ runner.os == 'macOS' || matrix.os == 'ubuntu-20.04' }}
+        if: ${{ runner.os == 'macOS' || matrix.os == 'ubuntu-22.04' }}
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
