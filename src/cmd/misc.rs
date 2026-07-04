@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::config;
-use crate::context::{Context, RADM_VERSION, VERSION};
+use crate::context::{Context, RYADM_VERSION, VERSION};
 use crate::encrypt;
 use crate::git;
 use crate::hooks;
@@ -34,7 +34,7 @@ pub fn bootstrap(ctx: &mut Context) {
     // exec: replace this process, like the script does
     use std::os::unix::process::CommandExt;
     let err = Command::new(&ctx.bootstrap_file).exec();
-    eprintln!("radm: {}: {}", ctx.bootstrap_file, err);
+    eprintln!("ryadm: {}: {}", ctx.bootstrap_file, err);
     std::process::exit(126);
 }
 
@@ -68,7 +68,7 @@ pub fn help(ctx: &Context) -> ! {
 
     // raw string: `\n\` continuations would strip the leading indentation
     print!(
-        r#"Usage: yadm <command> [options...]
+        r#"Usage: ryadm <command> [options...]
 
 Manage dotfiles maintained in a Git repository. Manage alternate files
 for specific systems or hosts. Encrypt/decrypt private files.
@@ -78,27 +78,27 @@ Any Git command or alias can be used as a <command>. It will operate
 on yadm's repository and files in the work tree (usually $HOME).
 
 Commands:
-  yadm init [-f]             - Initialize an empty repository
-  yadm clone <url> [-f]      - Clone an existing repository
-  yadm config <name> <value> - Configure a setting
-  yadm list [-a]             - List tracked files
-  yadm alt                   - Create links for alternates
-  yadm bootstrap             - Execute $HOME/.config/yadm/bootstrap
-  yadm encrypt               - Encrypt files
-  yadm decrypt [-l]          - Decrypt files
-  yadm perms                 - Fix perms for private files
-  yadm enter [COMMAND]       - Run sub-shell with GIT variables set
-  yadm git-crypt [OPTIONS]   - Run git-crypt commands for the yadm repo
-  yadm transcrypt [OPTIONS]  - Run transcrypt commands for the yadm repo
+  ryadm init [-f]             - Initialize an empty repository
+  ryadm clone <url> [-f]      - Clone an existing repository
+  ryadm config <name> <value> - Configure a setting
+  ryadm list [-a]             - List tracked files
+  ryadm alt                   - Create links for alternates
+  ryadm bootstrap             - Execute $HOME/.config/yadm/bootstrap
+  ryadm encrypt               - Encrypt files
+  ryadm decrypt [-l]          - Decrypt files
+  ryadm perms                 - Fix perms for private files
+  ryadm enter [COMMAND]       - Run sub-shell with GIT variables set
+  ryadm git-crypt [OPTIONS]   - Run git-crypt commands for the yadm repo
+  ryadm transcrypt [OPTIONS]  - Run transcrypt commands for the yadm repo
 
 Files:
   {config} - yadm's configuration file
   {encrypt} - List of globs to encrypt/decrypt
-  {bootstrap} - Script run via: yadm bootstrap
+  {bootstrap} - Script run via: ryadm bootstrap
   {repo} - yadm's Git repository
   {archive} - Encrypted data stored here
 
-Use "man yadm" for complete documentation.
+Use "man ryadm" for complete documentation.
 
 "#,
         config = pad(&config),
@@ -317,7 +317,7 @@ fn parse_class(p: &[char]) -> Option<(ClassFn, &[char])> {
 }
 
 pub fn version(ctx: &Context) -> ! {
-    println!("radm version {RADM_VERSION}");
+    println!("ryadm version {RYADM_VERSION}");
     print!(" ");
     let _ = std::io::stdout().flush();
     let _ = git::cmd(ctx).arg("--version").status();
