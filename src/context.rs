@@ -6,8 +6,9 @@
 
 /// The yadm interface version radm implements (yadm 3.5.0).
 pub const VERSION: &str = "3.5.0";
-/// radm's own version.
-pub const RADM_VERSION: &str = env!("CARGO_PKG_VERSION");
+/// radm's own version, from the Git release tag at build time (see build.rs),
+/// falling back to the Cargo.toml version for plain `cargo build`.
+pub const RADM_VERSION: &str = env!("RADM_VERSION");
 /// Name of the yadm v1 archive file, relative to the legacy dir.
 pub const LEGACY_ARCHIVE: &str = "files.gpg";
 

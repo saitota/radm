@@ -4,8 +4,7 @@ vars:
   # Last commit that contains the original bash yadm; the differential
   # compatibility tests run radm side-by-side against this exact script.
   YADM_REF: bbb58e6
-  VERSION:
-    sh: cargo pkgid | sed 's/.*#//'
+  REPO: saitota/radm
 
 tasks:
   default:
@@ -67,13 +66,27 @@ tasks:
       - cargo install --path . --locked
 
   release:
-    desc: 'Tag and publish a GitHub release with a macOS arm64 binary (usage: task release)'
-    deps: [build:release]
+    desc: 'Publish a GitHub release. Auto-bumps the patch of the latest vX.Y.Z; override with TAG=v1.2.0'
     preconditions:
       - sh: git diff --quiet && git diff --cached --quiet
         msg: 'Working tree is dirty; commit or stash first'
+    vars:
+      # Latest release tag, then bump patch (v1.0.0 if none). TAG=... overrides.
+      TAG:
+        sh: |
+          if [ -n "{{.TAG}}" ]; then echo "{{.TAG}}"; exit; fi
+          latest=$(gh release list --repo {{.REPO}} --limit 100 --json tagName --jq '.[].tagName' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          if [ -z "$latest" ]; then echo "v1.0.0"; exit; fi
+          echo "$latest" | awk -F. '{printf "%s.%s.%d\n", $1, $2, $3+1}'
+      # SemVer form (no leading v) stamped into the binary and asset names.
+      VERSION:
+        sh: echo '{{.TAG}}' | sed 's/^v//'
     cmds:
+      - RADM_VERSION={{.TAG}} cargo build --release
+      - '[ "$(./target/release/radm version | head -1)" = "radm version {{.VERSION}}" ]'
       - mkdir -p dist
       - tar -czf dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz -C target/release radm
       - shasum -a 256 dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz > dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz.sha256
-      - gh release create v{{.VERSION}} dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz.sha256 --title "radm v{{.VERSION}}" --generate-notes
+      - gh release create {{.TAG}} dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz dist/radm-{{.VERSION}}-aarch64-apple-darwin.tar.gz.sha256 --repo {{.REPO}} --title "radm {{.TAG}}" --target $(git rev-parse HEAD) --generate-notes
+      - git fetch origin tag {{.TAG}}
