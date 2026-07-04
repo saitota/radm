@@ -1,5 +1,4 @@
-// Ports the yadm pytest encryption/decryption CLI contract into explicit
-// Rust assertions (test/test_encryption.py, test/test_unit_exclude_encrypted.py).
+// CLI contract tests for encrypt/decrypt.
 //
 // All ciphering uses the "openssl wrapper" trick instead of real gpg: a
 // tiny shell script that forwards to the system `openssl` binary with a
@@ -7,14 +6,8 @@
 // `yadm.openssl-program <wrapper>`. This keeps every test hermetic,
 // parallel-safe, network-free, and free of any gpg-agent/pinentry setup.
 //
-// [INTERNAL] cases already covered by unit tests in src/encrypt.rs and
-// src/exclude.rs are intentionally NOT duplicated here (see the summary
-// returned to the caller): _get_cipher, _set_gpg_options,
-// _get_openssl_ciphername, _set_openssl_options, parse_encrypt's
-// glob/comment/exclude/tracked-file matrix, and update_exclude's general
-// managed-block mechanics all have direct Rust unit test equivalents
-// already. This file focuses on the [CLI]-level encrypt/decrypt contract:
-// exact stdout strings, exit codes, and on-disk side effects.
+// Cipher/parse/update_exclude internals are unit-tested in src/; this file
+// pins the CLI-level contract: exact stdout, exit codes, on-disk effects.
 
 mod common;
 use common::*;
@@ -35,7 +28,7 @@ fn setup_openssl_cipher(tb: &TestBed) -> String {
 
 /// The archive defaults to `$YADM_DATA/archive`, which lives outside the
 /// yadm work tree/repo and is therefore always untracked. `encrypt`'s
-/// "offer to add" prompt (section 6.4) always fires in that case; since our
+/// "offer to add" prompt always fires in that case; since our
 /// test harness detaches from any controlling tty, `read -r answer
 /// </dev/tty>` fails and no answer is recorded (equivalent to bash's own
 /// behavior when /dev/tty is unavailable), but the prompt text itself is
@@ -67,7 +60,7 @@ fn setup_openssl_cipher_logging(tb: &TestBed, log_path: &str) -> String {
 }
 
 // ---------------------------------------------------------------------
-// 6. `encrypt` command [CLI]
+// `encrypt` command
 // ---------------------------------------------------------------------
 
 #[test]
@@ -114,7 +107,7 @@ fn encrypt_empty_include_list_still_writes_archive() {
     // stderr, but since encrypt()'s success is judged solely by the
     // cipher's exit code (the pipeline's last command, matching bash pipe
     // semantics) rather than tar's, the overall command still succeeds and
-    // writes an archive — exactly per spec section 6.3's note. tar's own
+    // writes an archive. tar's own
     // stderr is inherited (unsuppressed), same as bash yadm, so it is not
     // asserted empty here.
     tb.write_home(".config/yadm/encrypt", "# nothing to encrypt\n\n");
@@ -275,7 +268,7 @@ fn encrypt_with_auto_exclude_false_suppresses_managed_block() {
 }
 
 // ---------------------------------------------------------------------
-// 7. `decrypt` command [CLI]
+// `decrypt` command
 // ---------------------------------------------------------------------
 
 #[test]
@@ -444,7 +437,7 @@ fn decrypt_wrong_passphrase_fails_with_extract_error() {
 }
 
 // ---------------------------------------------------------------------
-// 8.4 glob/exclude semantics as exercised through the real `encrypt` CLI
+// glob/exclude semantics as exercised through the real `encrypt` CLI
 // (parse_encrypt's matcher itself is already unit-tested in src/encrypt.rs;
 // these confirm the end-to-end CLI file list + info/exclude wiring).
 // ---------------------------------------------------------------------
@@ -519,7 +512,7 @@ fn encrypt_honors_doublestar_globs() {
 }
 
 // ---------------------------------------------------------------------
-// 4. OpenSSL options assembly — CLI-observable via wrapper argv logging.
+// OpenSSL options assembly — CLI-observable via wrapper argv logging.
 // ---------------------------------------------------------------------
 
 #[test]

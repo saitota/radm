@@ -1,6 +1,4 @@
-//! Port of yadm's pytest suite for permissions & private directories:
-//! `test_perms.py`, `test_assert_private_dirs.py`, `test_unit_private_dirs.py`,
-//! `test_unit_copy_perms.py`.
+//! Permissions & private-directory contract tests.
 //!
 //! Pins the exact, byte-level contract of `yadm perms` / `auto_perms()` /
 //! `private_dirs()` / `assert_private_dirs()` / `auto_private_dirs` with
@@ -19,10 +17,8 @@ fn secured(mode: u32) -> bool {
     mode & 0o077 == 0
 }
 
-/// Build a ds1-like layout: tracked private files under .ssh/.gnupg plus a
-/// couple of top-level files, mirroring the pytest `ds1` fixture closely
-/// enough to exercise perms()/private-dirs semantics (exact repo history
-/// content is not asserted, only resulting file-mode/existence facts).
+/// Tracked private files under .ssh/.gnupg plus a couple of top-level
+/// files, enough to exercise perms()/private-dirs semantics.
 fn seed_private_files(tb: &TestBed) {
     tb.write_home_mode(".ssh/p1", "p1\n", 0o644);
     tb.write_home_mode(".ssh/.p2", "p2\n", 0o644);
@@ -31,7 +27,7 @@ fn seed_private_files(tb: &TestBed) {
 }
 
 // ---------------------------------------------------------------------------
-// 1. `perms()` -- yadm perms CLI: exact stdout/stderr/exit contract
+// `perms()` -- yadm perms CLI: exact stdout/stderr/exit contract
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -159,7 +155,6 @@ fn perms_secures_archive_file_when_present() {
 
 #[test]
 fn perms_secures_encrypt_listed_files_but_not_excluded_ones() {
-    // Mirrors test_perms's efile1/efile2/!efile1 encrypt-file scenario:
     // the "!" prefix excludes efile1 from ENCRYPT_INCLUDE_FILES, so only
     // efile2 gets secured by perms().
     let tb = TestBed::new("perms-encrypt-listed");
@@ -190,7 +185,7 @@ fn perms_secures_encrypt_listed_files_but_not_excluded_ones() {
 }
 
 // ---------------------------------------------------------------------------
-// 1b. yadm.ssh-perms / yadm.gpg-perms fine-grained control
+// yadm.ssh-perms / yadm.gpg-perms fine-grained control
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -299,7 +294,7 @@ fn ssh_perms_true_and_gpg_perms_true_both_secure() {
 }
 
 // ---------------------------------------------------------------------------
-// 1c. GNUPGHOME env moves the gnupg glob target
+// GNUPGHOME env moves the gnupg glob target
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -367,7 +362,7 @@ fn gnupghome_env_outside_worktree_still_secures_absolute_target() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. auto_perms(): runs after git passthrough commands, gated by yadm.auto-perms
+// auto_perms(): runs after git passthrough commands, gated by yadm.auto-perms
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -474,7 +469,7 @@ fn auto_perms_true_explicit_behaves_like_default() {
 }
 
 // ---------------------------------------------------------------------------
-// 3. auto_private_dirs: git passthrough commands create .ssh/.gnupg at 0700
+// auto_private_dirs: git passthrough commands create .ssh/.gnupg at 0700
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -613,8 +608,8 @@ fn auto_private_dirs_creates_nested_gnupghome_via_env() {
 }
 
 // ---------------------------------------------------------------------------
-// 4. private_dirs() -- unit-style coverage of the underlying Rust function
-//    (gnupg_dir / private_dirs_all), matching test_relative_path's matrix.
+// private_dirs() -- unit-style coverage of the underlying Rust function
+//    (gnupg_dir / private_dirs_all).
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -655,7 +650,7 @@ fn private_dirs_with_gnupghome_relative_subpath_of_work() {
 }
 
 // ---------------------------------------------------------------------------
-// 5. get_mode / copy_perms -- exercised via template rendering, which is the
+// get_mode / copy_perms -- exercised via template rendering, which is the
 //    one real call site of copy_perms in radm (yadm:355 template()).
 // ---------------------------------------------------------------------------
 

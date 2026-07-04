@@ -1,7 +1,6 @@
 //! encrypt/decrypt commands, encrypt-file parsing and encrypted excludes.
 //! Reference: yadm script lines 928-1084 (ciphers, encrypt, decrypt),
 //! 1555-1572 (exclude_encrypted), 1970-2017 (parse_encrypt).
-//! Spec: scratchpad specs encryption.md.
 
 use std::io::{Read, Write};
 use std::path::Path;
@@ -607,8 +606,6 @@ mod tests {
         std::fs::write(format!("{work}/simple_file"), "x").unwrap();
         std::fs::write(format!("{work}/wildcard1"), "x").unwrap();
         std::fs::write(format!("{work}/excluded_file"), "x").unwrap();
-        // wild* would match excluded_file too, since it doesn't start with
-        // "wild" it won't; but wildcard1 matches "wild*".
         let mut ctx = base_ctx(&work);
         std::env::set_var("GIT_DIR", format!("{work}/.git"));
 

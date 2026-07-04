@@ -1,13 +1,7 @@
-//! Ported pytest assertions for repo-level commands: init, clone, upgrade,
-//! git passthrough, and the disabled `clean` command.
-//!
-//! Source: spec/repo-cmds.md, itself derived from yadm 3.5.0's
-//! test_init.py, test_clone.py, test_upgrade.py, test_unit_upgrade.py,
-//! test_git.py, test_clean.py.
-//!
-//! These pin the *exact* strings/exit codes/filesystem effects called out in
-//! the spec (as opposed to tests/compat_yadm.rs, which only differentially
-//! compares radm against bash yadm).
+//! Contract tests for repo-level commands: init, clone, upgrade, git
+//! passthrough, and the disabled `clean` command. These pin the exact
+//! strings/exit codes/filesystem effects (as opposed to
+//! tests/compat_yadm.rs, which differentially compares against bash yadm).
 
 mod common;
 
@@ -74,7 +68,7 @@ fn make_remote(tb: &TestBed, name: &str, files: &[(&str, &str)]) -> std::path::P
 }
 
 // ---------------------------------------------------------------------------
-// 1. init
+// init
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -175,7 +169,7 @@ fn init_w_and_force_together_relative_work_path() {
     let work = work_parent.join("work");
     std::fs::create_dir_all(&work).unwrap();
 
-    // `-w work` (relative), run with cwd = work's dirname, per spec row.
+    // `-w work` (relative), run with cwd = work's dirname.
     let r = tb.radm_in(&work_parent, &["init", "-w", "work", "-f"]);
     assert!(r.success());
     assert!(r.out_contains("Initialized empty shared Git repository"));
@@ -186,7 +180,7 @@ fn init_w_and_force_together_relative_work_path() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. clone
+// clone
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -671,7 +665,7 @@ fn clone_alternate_branch_invalid_fails_with_both_messages() {
 }
 
 // ---------------------------------------------------------------------------
-// 3. upgrade
+// upgrade
 // ---------------------------------------------------------------------------
 
 #[test]

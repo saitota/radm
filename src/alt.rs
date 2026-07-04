@@ -1,7 +1,4 @@
 //! Alternate file processing (yadm's alt command and scoring engine).
-//! Reference: yadm script lines 167-745 (score_file, record_score,
-//! set_local_alt_values, alt, alt_linking, ln_relative, report_invalid_alts).
-//! Spec: scratchpad specs alt.md / template.md.
 
 use crate::config;
 use crate::context::Context;
@@ -25,9 +22,7 @@ pub struct LocalValues {
     pub distro_family: String,
 }
 
-/// One recorded alt candidate (target -> best-scoring source), mirroring the
-/// four parallel bash arrays alt_targets/alt_sources/alt_scores/
-/// alt_template_processors.
+/// One recorded alt candidate (target -> best-scoring source).
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct AltCandidate {
     target: String,
@@ -50,10 +45,7 @@ fn split_conditions(conditions: &str) -> Vec<String> {
     fields
 }
 
-/// yadm's score_file (yadm:169-254). Computes the score for `source`/`target`
-/// under `conditions`, recording it (via `record_score`-equivalent state
-/// mutation on `candidates`/`invalid_alt`) when the loop completes without an
-/// early abort.
+/// yadm's score_file (yadm:169-254).
 #[allow(clippy::too_many_arguments)]
 fn score_file(
     ctx: &Context,
@@ -202,7 +194,6 @@ fn record_score(
         return;
     }
 
-    // search from the end, like the bash backward loop
     let index = candidates.iter().rposition(|c| c.target == target);
 
     let index = match index {
@@ -258,7 +249,6 @@ pub fn set_local_alt_values(ctx: &Context) -> LocalValues {
     let mut host = config::config_output(ctx, &["local.hostname"]);
     if host.is_empty() {
         host = os::capture("uname", &["-n"]);
-        // trim any domain from hostname
         host = host.split('.').next().unwrap_or("").to_string();
     }
 
@@ -299,14 +289,12 @@ pub fn alt(ctx: &mut Context) {
     // only be noisy if the "alt" command was run directly
     let loud = ctx.yadm_command == "alt";
 
-    // decide if a copy should be done instead of a symbolic link
     let do_copy = config::config_output(ctx, &["--bool", "yadm.alt-copy"]) == "true";
 
     if !paths::cd_work(ctx, "Alternates") {
         return;
     }
 
-    // determine all tracked files
     let (tracked_out, _) = git::capture(ctx, &["ls-files", "--", "*##*"], false);
     let tracked_files: Vec<String> = if tracked_out.is_empty() {
         Vec::new()

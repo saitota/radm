@@ -4,8 +4,6 @@
 //! `src/template_default.rs` and are intentionally NOT re-tested here — this
 //! file only pins the CLI-observable contract: how `##template`/`##seed` alt
 //! files resolve, render, get excluded, and interact with the filesystem.
-//!
-//! Spec: scratchpad specs/template.md, sections 2, 3.5 (error format), 6.
 
 mod common;
 use common::*;
@@ -133,8 +131,7 @@ fn template_overrides_plain_alt_symlink_behavior() {
 /// A `##seed` alt renders on the first `alt` run (target absent), then is
 /// completely left alone on every subsequent run even if both the seed
 /// source and the target are later modified — the target keeps whatever
-/// content it had after the first render (spec section 6.2/6.5,
-/// `test_alt_seed`).
+/// content it had after the first render.
 #[test]
 fn seed_renders_once_then_never_overwrites() {
     let tb = TestBed::new("tpl-seed-once");
@@ -261,8 +258,7 @@ fn template_error_prints_diagnostic_and_leaves_target_absent() {
 
     let r = tb.radm(&["alt"]);
     // `yadm alt` itself still exits 0 even though one template failed to
-    // render (per spec §6.2/§2: no error exit propagates from a single
-    // failed template source).
+    // render — no error exit propagates from a single failed template source.
     assert!(r.success(), "alt should still exit 0: {r:?}");
 
     let source = tb.home_path("bad.txt##template");
@@ -427,7 +423,7 @@ fn non_executable_source_mode_is_also_copied_verbatim() {
 
 // ---------------------------------------------------------------------
 // Alt condition combined with a template label: a mismatched non-template
-// condition suppresses an otherwise-valid template render (spec §6.6).
+// condition suppresses an otherwise-valid template render.
 // ---------------------------------------------------------------------
 
 /// `##template,arch.<mismatch>` never renders because the `arch` condition's

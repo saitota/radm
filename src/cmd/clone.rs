@@ -1,5 +1,5 @@
 //! The clone command.
-//! Reference: yadm script lines 765-882. Spec: scratchpad specs repo-cmds.md.
+//! Reference: yadm script lines 765-882.
 
 use std::path::Path;
 

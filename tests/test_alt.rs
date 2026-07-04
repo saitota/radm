@@ -1,11 +1,7 @@
-//! Port of yadm's `test/test_alt.py` / `test/test_alt_copy.py` pytest
-//! assertions into explicit Rust CLI integration tests. See spec:
-//! scratchpad specs/alt.md. Focuses on [CLI]-visible behavior; the
-//! score_file/record_score/report_invalid_alts INTERNAL algorithms already
-//! have direct unit-test coverage in src/alt.rs (see #[cfg(test)] there),
-//! so this file does not duplicate those — it drives the compiled `radm`
-//! binary end-to-end and asserts on stdout/stderr text, symlink targets,
-//! file contents, modes, and exclude-file/status side effects.
+//! CLI integration tests for alternate-file processing. The scoring
+//! algorithms are unit-tested in src/alt.rs; this file drives the compiled
+//! `radm` binary end-to-end and asserts on stdout/stderr text, symlink
+//! targets, file contents, modes, and exclude-file/status side effects.
 
 mod common;
 use common::*;

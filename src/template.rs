@@ -1,5 +1,5 @@
 //! Template processing dispatch and the external processors (esh, j2, envtpl).
-//! Reference: yadm script lines 307-539. Spec: scratchpad specs template.md.
+//! Reference: yadm script lines 307-539.
 
 use std::process::{Command, Stdio};
 
@@ -194,7 +194,7 @@ mod tests {
         ctx
     }
 
-    // §1 test_kind_default: awk_available x label -> expected
+    // awk_available x label -> expected
     #[test]
     fn choose_kind_default_matrix() {
         let cases = [
@@ -215,7 +215,7 @@ mod tests {
         }
     }
 
-    // §1 test_kind_j2cli_envtpl: label x envtpl x j2cli -> expected
+    // label x envtpl x j2cli -> expected
     #[test]
     fn choose_kind_j2cli_envtpl_matrix() {
         let cases: &[(&str, bool, bool, &str)] = &[

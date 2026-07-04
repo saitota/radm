@@ -1,4 +1,4 @@
-//! Ports pytest assertions (spec: simple-cmds.md) for `config`, `enter`,
+//! Contract tests for `config`, `enter`,
 //! `list`, `introspect`, `help`, `version`, and `yadm.git-program` override
 //! into explicit expectation tests (exact strings/exit codes/FS effects),
 //! independent of the differential suite in compat_yadm.rs.
@@ -7,7 +7,7 @@ mod common;
 use common::*;
 
 // ---------------------------------------------------------------------
-// 1. `config`
+// `config`
 // ---------------------------------------------------------------------
 
 const CONFIG_NO_ARGS_EXPECTED: &str = "\
@@ -48,8 +48,8 @@ fn config_no_args_prints_exact_help_text() {
     assert!(r.success());
     assert_eq!(r.stderr, "");
     assert_eq!(r.stdout, CONFIG_NO_ARGS_EXPECTED);
-    // spec 1.2: contains the CONFIGURATION-section pointer and every
-    // supported config string (looser containment check preserved too).
+    // contains the CONFIGURATION-section pointer and every supported
+    // config string.
     assert!(r.out_contains("Please read the CONFIGURATION section"));
     for cfg in [
         "local.arch",
@@ -213,7 +213,7 @@ fn config_dash_l_lists_yadm_config_contents() {
 }
 
 // ---------------------------------------------------------------------
-// 4. `introspect`
+// `introspect`
 // ---------------------------------------------------------------------
 
 const INTROSPECT_COMMANDS_EXPECTED: &str = "alt\n\
@@ -335,7 +335,7 @@ fn introspect_unknown_or_no_arg_prints_nothing_exit_0() {
 }
 
 // ---------------------------------------------------------------------
-// 5. `help` / no-args / `--help`
+// `help` / no-args / `--help`
 // ---------------------------------------------------------------------
 
 /// Build the expected `help` text (paths shown with a literal `$HOME` prefix,
@@ -427,7 +427,7 @@ fn no_args_behaves_like_help() {
 }
 
 // ---------------------------------------------------------------------
-// 6. `version` / `--version`
+// `version` / `--version`
 // ---------------------------------------------------------------------
 
 #[test]
@@ -461,7 +461,7 @@ fn version_via_double_dash_version_same_shape() {
 }
 
 // ---------------------------------------------------------------------
-// 2. `enter`
+// `enter`
 // ---------------------------------------------------------------------
 
 #[test]
@@ -672,7 +672,7 @@ fn enter_shell_ops_with_command_suppresses_banners_and_propagates_exit() {
 }
 
 // ---------------------------------------------------------------------
-// 3. `list`
+// `list`
 // ---------------------------------------------------------------------
 
 fn ds1_files() -> Vec<(&'static str, &'static str)> {
@@ -729,7 +729,7 @@ fn list_no_flag_from_subdir_lists_only_files_under_subdir_relative() {
 }
 
 // ---------------------------------------------------------------------
-// 7. `yadm.git-program` override (CLI-observable via a logging wrapper)
+// `yadm.git-program` override (CLI-observable via a logging wrapper)
 // ---------------------------------------------------------------------
 
 #[test]

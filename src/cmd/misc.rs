@@ -128,7 +128,6 @@ pub fn list(ctx: &mut Context) {
         return;
     }
 
-    // list tracked files
     let _ = git::run(ctx, &["ls-files"]);
 }
 

@@ -1,5 +1,5 @@
 //! The upgrade command (legacy path migration).
-//! Reference: yadm script lines 1368-1473. Spec: scratchpad specs repo-cmds.md.
+//! Reference: yadm script lines 1368-1473.
 //! Note: yadm's upgrade ends with a bare `exit 0` — it never runs the post
 //! hook or the automatic events.
 
@@ -221,9 +221,7 @@ mod tests {
     use super::*;
     use std::sync::Mutex;
 
-    // Serialize tests that create a Context (each does XDG dir resolution
-    // against process env, but we only use the pure helpers here so it's
-    // safe/cheap either way). Kept for clarity, not strictly required.
+    // serialize: Context::new reads process-global env
     static LOCK: Mutex<()> = Mutex::new(());
 
     fn tmp_home() -> String {

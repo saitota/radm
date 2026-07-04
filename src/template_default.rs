@@ -1,7 +1,7 @@
 //! Pure-Rust port of yadm's built-in "default" template engine (the awk
 //! program embedded in template_default, yadm script lines 362-494).
 //! Must be behavior-identical, including error messages "file:line: error: ..."
-//! printed to stderr. Spec: scratchpad specs template.md.
+//! printed to stderr.
 
 use crate::alt::LocalValues;
 use crate::context::Context;
@@ -106,7 +106,6 @@ fn match_if_directive(line: &str) -> Option<(String, String, String)> {
     }
     let rest = rest.trim_start_matches([' ', '\t']);
 
-    // Parse VARIABLE at the start of `rest`.
     let (vstart, vend) = find_variable(rest, 0)?;
     if vstart != 0 {
         return None;
@@ -115,7 +114,6 @@ fn match_if_directive(line: &str) -> Option<(String, String, String)> {
     let rest = &rest[vend..];
     let rest = rest.trim_start_matches([' ', '\t']);
 
-    // op: == or !=
     let op = if let Some(r) = rest.strip_prefix("==") {
         let _ = r;
         "=="
@@ -138,11 +136,7 @@ fn match_if_directive(line: &str) -> Option<(String, String, String)> {
     let after_rhs = &after_quote[last_quote_rel + 1..];
     let after_rhs = after_rhs.trim_start_matches([' ', '\t']);
     let after_rhs = after_rhs.strip_suffix("%}")?;
-    // whatever remains between the closing quote and "%}" must be only
-    // whitespace (already trimmed at the front); ensure nothing else remains
-    // except trailing whitespace that was part of the strip above. Also the
-    // overall line (after trim_end for whitespace/newline) must end exactly
-    // here.
+    // only whitespace may remain between the closing quote and "%}"
     if !after_rhs.chars().all(|c| c == ' ' || c == '\t') {
         return None;
     }
@@ -191,14 +185,10 @@ fn match_include_directive(line: &str) -> Option<String> {
     }
     let t = t.trim_start_matches([' ', '\t']);
 
-    // NAME is either "[^"]+" or [^"]+ (bare, no quotes) — either way it's
-    // whatever precedes the trailing `[ \t]*%}`. Find the LAST occurrence of
-    // "%}" preceded by optional whitespace to anchor the end.
+    // NAME is "[^"]+" or bare [^"]+: whatever precedes the trailing [ \t]*%}
     let t_trimmed_end = t;
-    // Strip trailing [ \t]*%} from the end.
     let without_close = t_trimmed_end.strip_suffix("%}")?;
     let mut name_part = without_close;
-    // trim trailing spaces/tabs that were matched by [ \t]* before %}
     let end_trim = name_part.trim_end_matches([' ', '\t']);
     name_part = end_trim;
 
@@ -459,7 +449,6 @@ pub fn template_default(_ctx: &Context, input: &str, values: &LocalValues) -> Re
                 }
             }
         }
-        // EOF on this file: pop it and resume the parent.
         stack.pop();
     }
 
@@ -495,8 +484,6 @@ mod tests {
         path.to_string_lossy().into_owned()
     }
 
-    /// Write content with NO trailing newline processing surprises (write_temp
-    /// already writes exactly the bytes given).
     fn write_temp_in_dir(dir: &str, rel: &str, content: &str) -> String {
         let path = std::path::Path::new(dir).join(rel);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -522,9 +509,6 @@ mod tests {
         let input = write_temp("env_test", "{{env.PWD}}");
         let values = base_values();
         let ctx = Context::new();
-        // ensure PWD is set for the duration of the test (read, not mutate
-        // global state destructively across threads is a risk, but this
-        // mirrors the bash test's reliance on inherited PWD).
         let pwd = std::env::var("PWD").unwrap_or_default();
         let result = template_default(&ctx, &input, &values).unwrap();
         assert_eq!(result.trim(), pwd);
@@ -726,10 +710,7 @@ end of template\n\
         );
         write_temp_in_dir(&dir, "dir/nested", "no newline at the end");
 
-        // Built line-by-line (see test_nested_ifs comment) so the leading
-        // spaces before `{% include dir/nested %}` are preserved verbatim as
-        // in the spec's fixture (the directive still consumes the line
-        // regardless, but this keeps the fixture byte-faithful to the spec).
+        // built line-by-line to preserve the fixture's leading spaces
         let input_lines = [
             "The first line",
             "{% include empty %}",

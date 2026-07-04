@@ -1,16 +1,12 @@
-//! Port of yadm's pytest suites for bootstrap, hooks, and path resolution:
-//! test_bootstrap.py, test_hooks.py, test_unit_bootstrap_available.py,
-//! test_unit_configure_paths.py, test_unit_set_yadm_dir.py,
-//! test_unit_relative_path.py, test_unit_issue_legacy_path_warning.py, plus
-//! the auto-bootstrap-after-clone contract cross-referenced from
-//! test_clone.py. These pin exact expected strings/exit codes/side effects
-//! (not just differential comparison against bash yadm).
+//! Bootstrap, hooks, and path-resolution contract tests: exact expected
+//! strings/exit codes/side effects (not just differential comparison
+//! against bash yadm).
 
 mod common;
 use common::*;
 
 // ---------------------------------------------------------------------
-// 1. Bootstrap command (`radm bootstrap`) -- test_bootstrap.py
+// Bootstrap command (`radm bootstrap`)
 // ---------------------------------------------------------------------
 
 #[test]
@@ -51,7 +47,7 @@ fn bootstrap_executable_execs_and_propagates_exit_code() {
 }
 
 // ---------------------------------------------------------------------
-// 2. Auto-bootstrap after clone -- cross-referenced from test_clone.py
+// Auto-bootstrap after clone
 // ---------------------------------------------------------------------
 
 /// Build a bare remote at `<root>/remote.git` with a single commit.
@@ -141,7 +137,7 @@ fn clone_bootstrap_message_never_appears_when_bootstrap_absent() {
 }
 
 // ---------------------------------------------------------------------
-// 3. Hooks -- test_hooks.py
+// Hooks
 // ---------------------------------------------------------------------
 
 fn create_hook(tb: &TestBed, rel: &str, name: &str, code: i32) {
@@ -149,8 +145,8 @@ fn create_hook(tb: &TestBed, rel: &str, name: &str, code: i32) {
     tb.write_home_mode(rel, &script, 0o755);
 }
 
-/// The 2 x 7 `test_hooks.py::test_hooks` matrix, ported for the `version`
-/// command (using `--version`, which mangles to the same `HOOK_COMMAND`).
+/// Hook invocation matrix for the `version` command (`--version` mangles
+/// to the same `HOOK_COMMAND`).
 #[test]
 fn hooks_pre_post_matrix_for_version_and_dashdash_version() {
     struct Case {
@@ -299,9 +295,8 @@ fn pre_hook_failure_prints_exact_two_lines_and_propagates_exit_code() {
     assert!(r.stdout.contains("version will not be run\n"));
 }
 
-/// test_hooks.py::test_hook_env -- full env-var contract, using a real repo
-/// fixture and an unknown git subcommand ("passthrucmd") as the git module
-/// spec recommends (radm passes git's own failure through unmodified).
+/// Full hook env-var contract, using a real repo fixture and an unknown
+/// git subcommand ("passthrucmd"; radm passes git's own failure through).
 #[test]
 fn hook_env_vars_exact_set_and_values_for_passthru_command() {
     let tb = TestBed::new("hook-env-passthru");
@@ -407,7 +402,7 @@ fn hook_executable_runs() {
 }
 
 // ---------------------------------------------------------------------
-// 4. Path resolution -- -Y/--yadm-dir, --yadm-data, --yadm-repo, etc.
+// Path resolution -- -Y/--yadm-dir, --yadm-data, --yadm-repo, etc.
 // ---------------------------------------------------------------------
 
 #[test]
