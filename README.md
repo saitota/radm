@@ -1,4 +1,4 @@
-# ryadm - Rust (Yet) Another Dotfiles Manager
+# ⚡️ ryadm - Rust Yet Another Dotfiles Manager
 
 **ryadm** is a byte-compatible Rust rewrite of [yadm][] 3.5.0. It's a drop-in
 replacement: same commands, options, exit codes, output, and config files — a
@@ -14,7 +14,8 @@ bash/awk quirks.
 * Encryption via GnuPG, OpenSSL, transcrypt, or git-crypt
 * Bootstrapping and hooks
 
-ryadm implements yadm's interface, so [yadm's docs][website-link] apply directly.
+ryadm implements yadm's interface, so [yadm's docs][website-link] apply directly —
+read `yadm` as `ryadm`.
 
 ## Install
 
@@ -26,13 +27,11 @@ mkdir -p ~/.local/bin && gh release download --repo saitota/ryadm \
   --pattern '*aarch64-apple-darwin.tar.gz' -O - | tar xz -C ~/.local/bin ryadm
 ```
 
-Or build from source (needs a Rust toolchain, edition 2021, Rust 1.74+):
+Or build from source:
 
 ```sh
 cargo install --path .   # or: task install
 ```
-
-(No releases are published yet; build from source for now.)
 
 ## Quick tour
 
@@ -93,5 +92,4 @@ Byrne, (C) 2025 Erik Flodin.
 [license-badge]: https://img.shields.io/badge/license-GPL--3.0--or--later-blue
 [license-link]: https://github.com/saitota/ryadm/blob/main/LICENSE
 [website-link]: https://yadm.io/
-[yadm]: https://github.com/yadm-dev/yadm
 [yadm]: https://github.com/yadm-dev/yadm
