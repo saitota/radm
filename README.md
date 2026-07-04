@@ -1,92 +1,97 @@
-# yadm - Yet Another Dotfiles Manager
+# ⚡️ ryadm - Rust Yet Another Dotfiles Manager
 
-[![Latest Version][releases-badge]][releases-link]
-[![Homebrew Version][homebrew-badge]][homebrew-link]
-[![OBS Version][obs-badge]][obs-link]
-[![Arch Version][arch-badge]][arch-link]
-[![License][license-badge]][license-link]<br />
-[![Master Update][master-date]][master-commits]
-[![Develop Update][develop-date]][develop-commits]
-[![Website Update][website-date]][website-commits]<br />
-[![Master Status][master-badge]][workflow-master]
-[![Develop Status][develop-badge]][workflow-develop]
-[![GH Pages Status][gh-pages-badge]][workflow-gh-pages]
-[![Dev Pages Status][dev-pages-badge]][workflow-dev-pages]
+**ryadm** is a byte-compatible Rust rewrite of [yadm][] 3.5.0. It's a drop-in
+replacement: same commands, options, exit codes, output, and config files — a
+native binary instead of a bash script, for faster startup and no cross-platform
+bash/awk quirks.
 
-[https://yadm.io/][website-link]
+[![License][license-badge]][license-link]
 
-**yadm** is a tool for managing [dotfiles][].
+## Features
 
-* Based on [Git][], with full range of Git's features
-* Supports system-specific [alternative][feature-alternates] files or
-  [templated][feature-templates] files
-* [Encryption][feature-encryption] of private data using [GnuPG][],
-  [OpenSSL][], [transcrypt][], or [git-crypt][]
-* Customizable initialization ([bootstrapping][feature-bootstrap])
-* Customizable [hooks][feature-hooks] for before and after any operation
+* Git-based, with its full feature set
+* System-specific alternate and templated files
+* Encryption via GnuPG, OpenSSL, transcrypt, or git-crypt
+* Bootstrapping and hooks
 
-Complete features, usage, examples and installation instructions can be found on
-the [yadm.io][website-link] website.
+ryadm implements yadm's interface, so [yadm's docs][website-link] apply directly.
 
-## A very quick tour
+## Install
 
-    # Initialize a new repository
-    yadm init
+Prebuilt binary (macOS arm64) — fetch the latest release and install to
+`~/.local/bin` in one go (needs [`gh`][gh]):
 
-    # Clone an existing repository
-    yadm clone <url>
+```sh
+mkdir -p ~/.local/bin && gh release download --repo saitota/ryadm \
+  --pattern '*aarch64-apple-darwin.tar.gz' -O - | tar xz -C ~/.local/bin ryadm
+```
 
-    # Add files/changes
-    yadm add <important file>
-    yadm commit
+Or build from source (needs a Rust toolchain, edition 2021, Rust 1.74+):
 
-    # Encrypt your ssh key
+```sh
+cargo install --path .   # or: task install
+```
+
+(No releases are published yet; build from source for now.)
+
+## Quick tour
+
+    ryadm init                         # or: ryadm clone <url>
+    ryadm add <file> && ryadm commit
+
     echo '.ssh/id_rsa' > ~/.config/yadm/encrypt
-    yadm encrypt
+    ryadm encrypt                      # ryadm decrypt to restore
 
-    # Later, decrypt your ssh key
-    yadm decrypt
+    ryadm add path/file.cfg##os.Linux  # per-OS alternates
+    ryadm add path/file.cfg##os.Darwin
 
-    # Create different files for Linux vs MacOS
-    yadm add path/file.cfg##os.Linux
-    yadm add path/file.cfg##os.Darwin
+## Commands
 
-If you enjoy using yadm, consider adding a star to the repository on GitHub.
-The star count helps others discover yadm.
+| Command | Description |
+|---------|-------------|
+| `init [-f]` | Initialize an empty repository |
+| `clone <url> [-f]` | Clone an existing repository |
+| `config <name> <value>` | Configure a setting |
+| `list [-a]` | List tracked files |
+| `alt` | Create links for alternates |
+| `bootstrap` | Execute `$HOME/.config/yadm/bootstrap` |
+| `encrypt` / `decrypt [-l]` | Encrypt / decrypt files |
+| `perms` | Fix perms for private files |
+| `enter [COMMAND]` | Run a sub-shell with GIT variables set |
+| `git-crypt [OPTIONS]` | Run git-crypt against the repo |
+| `transcrypt [OPTIONS]` | Run transcrypt against the repo |
+| `version` / `help` | Print version / usage |
 
-[Git]: https://git-scm.com/
-[GnuPG]: https://gnupg.org/
-[OpenSSL]: https://www.openssl.org/
-[arch-badge]: https://img.shields.io/archlinux/v/extra/any/yadm
-[arch-link]: https://archlinux.org/packages/extra/any/yadm/
-[dev-pages-badge]: https://img.shields.io/github/actions/workflow/status/yadm-dev/yadm/test.yml?branch=dev-pages
-[develop-badge]: https://img.shields.io/github/actions/workflow/status/yadm-dev/yadm/test.yml?branch=develop
-[develop-commits]: https://github.com/yadm-dev/yadm/commits/develop
-[develop-date]: https://img.shields.io/github/last-commit/yadm-dev/yadm/develop.svg?label=develop
-[dotfiles]: https://en.wikipedia.org/wiki/Hidden_file_and_hidden_directory
-[feature-alternates]: https://yadm.io/docs/alternates
-[feature-bootstrap]: https://yadm.io/docs/bootstrap
-[feature-hooks]: https://yadm.io/docs/hooks
-[feature-encryption]: https://yadm.io/docs/encryption
-[feature-templates]: https://yadm.io/docs/templates
-[gh-pages-badge]: https://img.shields.io/github/actions/workflow/status/yadm-dev/yadm/test.yml?branch=gh-pages
-[git-crypt]: https://github.com/AGWA/git-crypt
-[homebrew-badge]: https://img.shields.io/homebrew/v/yadm.svg
-[homebrew-link]: https://formulae.brew.sh/formula/yadm
-[license-badge]: https://img.shields.io/github/license/yadm-dev/yadm.svg
-[license-link]: https://github.com/yadm-dev/yadm/blob/master/LICENSE
-[master-badge]: https://img.shields.io/github/actions/workflow/status/yadm-dev/yadm/test.yml?branch=master
-[master-commits]: https://github.com/yadm-dev/yadm/commits/master
-[master-date]: https://img.shields.io/github/last-commit/yadm-dev/yadm/master.svg?label=master
-[obs-badge]: https://img.shields.io/badge/OBS-v3.5.0-blue
-[obs-link]: https://software.opensuse.org/download.html?project=home%3ATheLocehiliosan%3Ayadm&package=yadm
-[releases-badge]: https://img.shields.io/github/tag/yadm-dev/yadm.svg?label=latest+release
-[releases-link]: https://github.com/yadm-dev/yadm/releases
-[transcrypt]: https://github.com/elasticdog/transcrypt
-[website-commits]: https://github.com/yadm-dev/yadm/commits/gh-pages
-[website-date]: https://img.shields.io/github/last-commit/yadm-dev/yadm/gh-pages.svg?label=website
+Any Git command or alias also works as a `<command>`, operating on ryadm's repo
+and the work tree (usually `$HOME`).
+
+Global options (before the command) override paths for one invocation:
+`-Y`/`--yadm-dir`, `--yadm-data`, `--yadm-repo`, `--yadm-config`,
+`--yadm-encrypt`, `--yadm-archive`, `--yadm-bootstrap`.
+
+## Development
+
+Everything goes through [Task][]; run `task` to list all tasks. `task ci` runs
+what CI runs; `task test:compat` diffs ryadm against the original bash yadm
+(pinned in git history), asserting identical stdout, stderr, exit codes, and
+filesystem state.
+
+## Platform support
+
+Developed and tested on **macOS on Apple Silicon**. Other Unix-like platforms
+should work (ryadm has zero runtime Rust deps and shells out to `git`,
+`gpg`/`openssl`, and template engines like yadm), but are untested.
+
+## License & attribution
+
+ryadm is a derivative work of [yadm][] and is distributed under the same license,
+[GPL-3.0-or-later][license-link]. Original yadm copyright (C) 2015-2024 Tim
+Byrne, (C) 2025 Erik Flodin.
+
+[Task]: https://taskfile.dev/
+[gh]: https://cli.github.com/
+[license-badge]: https://img.shields.io/badge/license-GPL--3.0--or--later-blue
+[license-link]: https://github.com/saitota/ryadm/blob/main/LICENSE
 [website-link]: https://yadm.io/
-[workflow-dev-pages]: https://github.com/yadm-dev/yadm/actions?query=workflow%3a%22test+site%22+branch%3adev-pages
-[workflow-develop]: https://github.com/yadm-dev/yadm/actions?query=workflow%3ATests+branch%3Adevelop
-[workflow-gh-pages]: https://github.com/yadm-dev/yadm/actions?query=workflow%3a%22test+site%22+branch%3agh-pages
-[workflow-master]: https://github.com/yadm-dev/yadm/actions?query=workflow%3ATests+branch%3Amaster
+[yadm]: https://github.com/yadm-dev/yadm
+[yadm]: https://github.com/yadm-dev/yadm
