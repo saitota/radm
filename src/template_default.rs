@@ -63,6 +63,12 @@ fn find_variable(s: &str, start: usize) -> Option<(usize, usize)> {
     let bytes = s.as_bytes();
     let mut i = start;
     while i < bytes.len() {
+        // the pattern is pure ASCII, so a match can never start inside a
+        // multibyte character; skip non-boundaries instead of panicking
+        if !s.is_char_boundary(i) {
+            i += 1;
+            continue;
+        }
         let rest = &s[i..];
         let prefix = if rest.starts_with("env.") {
             Some("env.".len())
@@ -357,11 +363,13 @@ pub fn template_default(_ctx: &Context, input: &str, values: &LocalValues) -> Re
                     skip.push(1);
                     continue;
                 }
-                let rhs = replace_vars(&rhs_lit, &stack, &classes, values, input).to_lowercase();
+                // awk's tolower() in the C locale only folds ASCII A-Z
+                let rhs =
+                    replace_vars(&rhs_lit, &stack, &classes, values, input).to_ascii_lowercase();
                 let lhs = if lhs_var == "yadm.class" {
                     let mut matched = None;
                     for cls in classes.split('\n') {
-                        if rhs == cls.to_lowercase() {
+                        if rhs == cls.to_ascii_lowercase() {
                             matched = Some(rhs.clone());
                             break;
                         }
@@ -375,7 +383,7 @@ pub fn template_default(_ctx: &Context, input: &str, values: &LocalValues) -> Re
                         values,
                         input,
                     )
-                    .to_lowercase()
+                    .to_ascii_lowercase()
                 };
                 if op == "==" {
                     skip.push(if lhs != rhs { 1 } else { 0 });
@@ -512,6 +520,75 @@ mod tests {
         let pwd = std::env::var("PWD").unwrap_or_default();
         let result = template_default(&ctx, &input, &values).unwrap();
         assert_eq!(result.trim(), pwd);
+    }
+
+    #[test]
+    fn test_multibyte_text_passes_through() {
+        let input = write_temp("multibyte", "日本語 テスト 🎉\n日本語{{yadm.os}}後置き\n");
+        let values = LocalValues {
+            system: "TestOS".to_string(),
+            ..base_values()
+        };
+        let ctx = Context::new();
+        let result = template_default(&ctx, &input, &values).unwrap();
+        assert_eq!(result, "日本語 テスト 🎉\n日本語TestOS後置き\n");
+    }
+
+    #[test]
+    fn test_braced_multibyte_is_not_a_variable() {
+        // `{{ 日本語 }}` doesn't match the ASCII-only VARIABLE pattern and
+        // must pass through verbatim (this used to panic on the non-ASCII
+        // byte after "{{").
+        let input = write_temp("multibyte_braces", "{{ 日本語 }}\nplain\n");
+        let values = base_values();
+        let ctx = Context::new();
+        let result = template_default(&ctx, &input, &values).unwrap();
+        assert_eq!(result, "{{ 日本語 }}\nplain\n");
+    }
+
+    #[test]
+    fn test_if_directive_with_multibyte_rhs() {
+        let lines = [
+            "{% if yadm.class == \"クラス\" %}",
+            "matched",
+            "{% else %}",
+            "other",
+            "{% endif %}",
+        ];
+        let input = write_temp("multibyte_if", &(lines.join("\n") + "\n"));
+        let values = LocalValues {
+            class: "クラス".to_string(),
+            classes: vec!["クラス".to_string()],
+            ..base_values()
+        };
+        let ctx = Context::new();
+        let result = template_default(&ctx, &input, &values).unwrap();
+        assert_eq!(result, "matched\n");
+    }
+
+    #[test]
+    fn test_case_folding_is_ascii_only_like_awk_c_locale() {
+        // awk's tolower() in the C locale folds only A-Z; "É" and "é" stay
+        // distinct while ASCII letters still compare case-insensitively.
+        let lines = [
+            "{% if yadm.class == \"éclass\" %}",
+            "folded",
+            "{% else %}",
+            "unfolded",
+            "{% endif %}",
+            "{% if yadm.class == \"Éclass\" %}",
+            "exact",
+            "{% endif %}",
+        ];
+        let input = write_temp("ascii_fold", &(lines.join("\n") + "\n"));
+        let values = LocalValues {
+            class: "Éclass".to_string(),
+            classes: vec!["Éclass".to_string()],
+            ..base_values()
+        };
+        let ctx = Context::new();
+        let result = template_default(&ctx, &input, &values).unwrap();
+        assert_eq!(result, "unfolded\nexact\n");
     }
 
     #[test]

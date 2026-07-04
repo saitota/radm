@@ -420,7 +420,8 @@ fn compat_alt_template_default() {
             "os is {{{{yadm.os}}}}\nclass is {{{{yadm.class}}}}\n\
 {{% if yadm.user == \"{user}\" %}}\nuser match\n{{% else %}}\nuser other\n{{% endif %}}\n\
 {{% if yadm.class == \"nope\" %}}\nwrong class\n{{% endif %}}\n\
-{{% include inc.part %}}\nsource is {{{{yadm.source}}}}\n"
+{{% include inc.part %}}\nsource is {{{{yadm.source}}}}\n\
+日本語 {{{{yadm.class}}}} 🎉\n{{{{ 日本語 }}}}\n"
         ),
     );
     add_tracked(&mut steps, "seed1##seed", "seeded {{yadm.class}}\n");
