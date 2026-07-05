@@ -1,8 +1,7 @@
 version: '3'
 
 vars:
-  # Last commit that contains the original bash yadm; the differential
-  # compatibility tests run ryadm side-by-side against this exact script.
+  # Last commit holding the original bash yadm; test:compat diffs against it.
   YADM_REF: bbb58e6
   REPO: saitota/ryadm
 
@@ -71,8 +70,7 @@ tasks:
       - sh: git diff --quiet && git diff --cached --quiet
         msg: 'Working tree is dirty; commit or stash first'
     vars:
-      # Next version: bump the patch of whichever is higher — the latest GitHub
-      # release tag or the current Cargo.toml. Keeps tags monotonic. VERSION=... overrides.
+      # Patch-bump whichever is higher: latest GitHub tag or Cargo.toml.
       VERSION:
         sh: |
           if [ -n "{{.VERSION}}" ]; then echo "{{.VERSION}}"; exit; fi
@@ -95,7 +93,6 @@ tasks:
   release:
     desc: 'From main, publish the Cargo.toml version to crates.io and cut the matching GitHub release. Bump first with `task tmp-version-bump`.'
     vars:
-      # The Cargo.toml version is the source of truth; the tag mirrors it.
       VERSION:
         sh: sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1
       TAG: v{{.VERSION}}
@@ -107,12 +104,10 @@ tasks:
       - sh: '! gh release view {{.TAG}} --repo {{.REPO}} >/dev/null 2>&1'
         msg: 'Release {{.TAG}} already exists; run `task tmp-version-bump` to bump first'
     cmds:
-      # Build from the current tree and sanity-check the stamped version.
       - RYADM_VERSION={{.TAG}} cargo build --release
       - '[ "$(./target/release/ryadm version | head -1)" = "ryadm version {{.VERSION}}" ]'
-      # Publish to crates.io first — it is irreversible, so fail before touching GitHub.
+      # crates.io is irreversible, so publish before touching GitHub.
       - cargo publish
-      # Package and create the GitHub release, targeting the current main commit.
       - mkdir -p dist
       - tar -czf dist/ryadm-{{.VERSION}}-aarch64-apple-darwin.tar.gz -C target/release ryadm
       - shasum -a 256 dist/ryadm-{{.VERSION}}-aarch64-apple-darwin.tar.gz > dist/ryadm-{{.VERSION}}-aarch64-apple-darwin.tar.gz.sha256
