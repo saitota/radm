@@ -19,15 +19,20 @@ read `yadm` as `ryadm`.
 
 ## Install
 
-Prebuilt binary (macOS arm64) — fetch the latest release and install to
-`~/.local/bin` in one go (needs [`gh`][gh]):
+From [crates.io][crate-link] — builds and installs the latest release:
+
+```sh
+cargo install ryadm
+```
+
+Or grab the prebuilt binary (macOS arm64) into `~/.local/bin` (needs [`gh`][gh]):
 
 ```sh
 mkdir -p ~/.local/bin && gh release download --repo saitota/ryadm \
   --pattern '*aarch64-apple-darwin.tar.gz' -O - | tar xz -C ~/.local/bin ryadm
 ```
 
-Or build from source:
+Or build from a checkout:
 
 ```sh
 cargo install --path .   # or: task install
@@ -88,6 +93,7 @@ ryadm is a derivative work of [yadm][] and is distributed under the same license
 Byrne, (C) 2025 Erik Flodin.
 
 [Task]: https://taskfile.dev/
+[crate-link]: https://crates.io/crates/ryadm
 [gh]: https://cli.github.com/
 [license-badge]: https://img.shields.io/badge/license-GPL--3.0--or--later-blue
 [license-link]: https://github.com/saitota/ryadm/blob/main/LICENSE
